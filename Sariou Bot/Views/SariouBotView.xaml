@@ -1,0 +1,33 @@
+﻿<UserControl x:Class="Sariou_Bot.Views.SariouBotView"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:components="clr-namespace:Sariou_Bot.Components"
+             xmlns:local="clr-namespace:Sariou_Bot.Views" 
+             mc:Ignorable="d" 
+             d:DesignHeight="550" d:DesignWidth="850">
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition/>
+        </Grid.ColumnDefinitions>
+        <TabControl>
+            <TabItem Header="Home">
+                <components:HomeComponent/>
+            </TabItem>
+            <TabItem Header="Commands">
+
+                <TabControl>
+                    <TabItem Header="Simple">
+                        <components:SimpleCommandsComponent DataContext="{Binding SimpleCommandsViewModel}"/>
+                    </TabItem>
+                    <TabItem Header="Sound">
+                        <components:SoundCommandComponent/>
+                    </TabItem>
+                </TabControl>
+
+            </TabItem>
+            <TabItem Header="Settings"/>
+        </TabControl>
+    </Grid>
+</UserControl>
