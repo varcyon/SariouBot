@@ -6,7 +6,7 @@
              xmlns:components="clr-namespace:Sariou_Bot.Components"
              xmlns:local="clr-namespace:Sariou_Bot.Views" 
              mc:Ignorable="d" 
-             d:DesignHeight="550" d:DesignWidth="850">
+             d:DesignHeight="550" d:DesignWidth="850" Initialized="SariouBot_Load" >
     <Grid>
         <Grid.ColumnDefinitions>
             <ColumnDefinition/>

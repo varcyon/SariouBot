@@ -19,7 +19,9 @@ namespace Sariou_Bot
             MainWindow = new MainWindow()
             {
                 DataContext = new SariouBotViewModel()
+                
             };
+           
             MainWindow.Show();
             base.OnStartup(e);
         }

@@ -5,7 +5,7 @@
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:Sariou_Bot" xmlns:views="clr-namespace:Sariou_Bot.Views"
         mc:Ignorable="d"
-        Title="Sariou Bot" Height="600" Width="900">
+        Title="Sariou Bot" Height="600" Width="900" >
     <Grid Margin="15">
         <views:SariouBotView  />
     </Grid>
