@@ -1,13 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading.Tasks;
 using System.Configuration;
 using System.Data;
 using System.Data.SQLite;
 using Dapper;
 using Sariou_Bot.Models;
+using Sariou_Bot.Views;
 
 namespace Sariou_Bot
 {
@@ -28,6 +28,27 @@ namespace Sariou_Bot
                 var sqlResult = conn.Query<SoundCommand>("SELECT * FROM SoundCommands", new DynamicParameters());
                 return sqlResult.ToList();
             }
+        }
+
+        public static List<Settings> LoadBotSettings()
+        {
+            using (IDbConnection conn = new SQLiteConnection(LoadConnectionString()))
+            {
+                var result = conn.Query<Settings>("SELECT * FROM BotSettings LIMIT 1", new DynamicParameters());
+                return (List<Settings>)result;
+            }
+        }
+        public static void UpdateSettingsChannelName()
+        {
+            using (IDbConnection conn = new SQLiteConnection(LoadConnectionString()))
+            {
+                string updateString = @"UPDATE BotSettings SET ChannelName = @Channel";
+                conn.Execute(updateString, new
+                {
+                    @Channel = SariouBotView.Settings.ChannelName
+                }); ;
+            }
+
         }
         public static void AddNewUsers(List<Viewer> listToAdd)
         {

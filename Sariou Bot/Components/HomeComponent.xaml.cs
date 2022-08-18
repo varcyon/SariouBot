@@ -1,4 +1,5 @@
-﻿using Sariou_Bot.Views;
+﻿using Sariou_Bot.Models;
+using Sariou_Bot.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -31,7 +32,8 @@ namespace Sariou_Bot.Components
 
         public void HomeComponent_Load(object sender, EventArgs e)
         {
-            ChannelName.Text = "varcy0n";
+            
+            ChannelName.Text = SariouBotView.Settings.ChannelName;
             ConnectBot.Visibility = Visibility.Visible;
             DisconnectBot.Visibility = Visibility.Hidden;
             SariouBotView.IsBotConnected += BotConnection;
@@ -46,6 +48,8 @@ namespace Sariou_Bot.Components
         {
             ConnectBot.Content = "Connecting...";
             ConnectTwitchBot?.Invoke(ChannelName.Text);
+            SariouBotView.Settings.ChannelName = ChannelName.Text;
+            DAO.UpdateSettingsChannelName();
         }
 
         public void BotConnection(Boolean connection)
@@ -79,5 +83,7 @@ namespace Sariou_Bot.Components
                 DisconnectBot.Visibility = Visibility.Visible;
             }));
         }
+
+
     }
 }

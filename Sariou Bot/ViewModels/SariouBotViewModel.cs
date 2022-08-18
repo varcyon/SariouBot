@@ -9,9 +9,11 @@ namespace Sariou_Bot.ViewModels
     public class SariouBotViewModel : ViewModelBase
     {
         public SimpleCommandsViewModel SimpleCommandsViewModel { get; }
+        public SoundCommandsViewModel SoundCommandsViewModel  { get; }
         public SariouBotViewModel()
         {
             SimpleCommandsViewModel = new SimpleCommandsViewModel();
+            SoundCommandsViewModel = new SoundCommandsViewModel();
         }
 
     }

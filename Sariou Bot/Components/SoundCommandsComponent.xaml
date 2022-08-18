@@ -17,15 +17,8 @@
                 <RowDefinition Height="150"/>
             </Grid.RowDefinitions>
 
-            <DataGrid x:Name="SoundCommands"   Grid.Row="0" Grid.Column="0" AlternatingRowBackground="Cyan" Width="787" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" ScrollViewer.CanContentScroll="True" Margin="4,0,3,0" Grid.RowSpan="2" Grid.ColumnSpan="2" Height="auto" VerticalAlignment="Top">
-                <DataGrid.Columns>
-                    <DataGridTextColumn Header="Command ID"/>
-                    <DataGridTextColumn Header="Command"/>
-                    <DataGridTextColumn Header="File Path"/>
-                    <DataGridTextColumn Header="Permissions"/>
-                    <DataGridTextColumn Header="Cooldown"/>
-                    <DataGridTextColumn Header="Created On"/>
-                </DataGrid.Columns>
+            <DataGrid x:Name="SoundCommands" ItemsSource="{Binding soundCommandsViewModel}" AutoGenerateColumns="True" Grid.Row="0" Grid.Column="0" AlternatingRowBackground="Cyan" Width="787" HorizontalContentAlignment="Stretch" VerticalContentAlignment="Stretch" ScrollViewer.CanContentScroll="True" Margin="4,0,3,0" Grid.RowSpan="2" Grid.ColumnSpan="2" Height="auto" VerticalAlignment="Top">
+
             </DataGrid>
             <TextBox x:Name="SoundCommandName" Grid.Column="0" HorizontalAlignment="Left" Margin="85,44,0,0" Grid.Row="1" TextWrapping="Wrap" Text="Command" VerticalAlignment="Top" Width="120"/>
             <ComboBox x:Name="SoundCommandPermissions" Grid.Column="0" HorizontalAlignment="Left" Margin="84,91,0,0" Grid.Row="1" VerticalAlignment="Top" Width="120">

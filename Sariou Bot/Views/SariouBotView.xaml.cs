@@ -45,7 +45,7 @@ namespace Sariou_Bot.Views
        ConnectionCredentials creds = new ConnectionCredentials(BotInfo.BotName, BotInfo.AccessToken);
        private TwitchClient? bot;
        public TwitchAPI? twitchAPI;
-
+        public static Settings? Settings;
 
 
        public List<Models.SimpleCommand> simpleCommands = new List<Models.SimpleCommand>();
@@ -57,13 +57,16 @@ namespace Sariou_Bot.Views
        private Queue<Action> commandsQUE = new Queue<Action>();
 
         public SariouBotView()
-        {
+        {   
+            Settings = DAO.LoadBotSettings()[0];
             InitializeComponent();
         }
 
         public void SariouBot_Load(object sender, EventArgs e)
-       {
+       {    
+           
            SetUpTwitchAPI();
+           
            //TODO: Get VIEWERDB
            simpleCommands = new List<Models.SimpleCommand>(DAO.LoadSimpleCommands());
 

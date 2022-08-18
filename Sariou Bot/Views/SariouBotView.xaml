@@ -22,7 +22,7 @@
                         <components:SimpleCommandsComponent DataContext="{Binding SimpleCommandsViewModel}"/>
                     </TabItem>
                     <TabItem Header="Sound">
-                        <components:SoundCommandComponent/>
+                        <components:SoundCommandComponent DataContext="{Binding SoundCommandsViewModel}"/>
                     </TabItem>
                 </TabControl>
 

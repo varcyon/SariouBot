@@ -13,7 +13,7 @@
             </Grid.ColumnDefinitions>
             <Button x:Name="ConnectBot" Content="Connect" Click="ConnectToTwitch" HorizontalAlignment="Left" Margin="580,432,0,0" VerticalAlignment="Top" Width="200" Height="40" />
             <Label Content="Channel" HorizontalAlignment="Left" Margin="653,11,0,0" VerticalAlignment="Top"/>
-            <TextBox x:Name="ChannelName" HorizontalAlignment="Left" Margin="619,37,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120"/>
+            <TextBox x:Name="ChannelName" HorizontalAlignment="Left" Margin="619,37,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Width="120" />
             <RichTextBox x:Name="ChatBox" HorizontalAlignment="Left" Height="367" Margin="580,60,0,0" VerticalAlignment="Top" Width="200" VerticalScrollBarVisibility="Visible" SelectionTextBrush="White" AutoWordSelection="False" FontStyle="Normal" FontSize="10" BorderThickness="0,0,0,0" ClipToBounds="True">
                 <FlowDocument>
                     <Paragraph>
