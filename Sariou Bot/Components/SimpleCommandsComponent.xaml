@@ -27,7 +27,7 @@
                 <ComboBoxItem Content="Mod"/>
                 <ComboBoxItem Content="Broadcaster"/>
             </ComboBox>
-            <Button x:Name="AddCommand"  Grid.Column="0" Content="Add Command" HorizontalAlignment="Left" Margin="700,44,0,0" Grid.Row="1" VerticalAlignment="Top" Height="42" Width="108"/>
+            <Button x:Name="AddCommand"  Grid.Column="0" Content="Add Command" HorizontalAlignment="Left" Margin="700,44,0,0" Grid.Row="1" VerticalAlignment="Top" Height="42" Width="108" Click="AddSimpleCommand"/>
             <TextBlock Grid.Column="0" HorizontalAlignment="Left" Margin="85,26,0,0" Grid.Row="1" TextWrapping="Wrap" Text="Command Name" VerticalAlignment="Top"/>
             <TextBlock Grid.Column="0" HorizontalAlignment="Left" Margin="224,26,0,0" Grid.Row="1" TextWrapping="Wrap" Text="Content" VerticalAlignment="Top"/>
             <TextBlock HorizontalAlignment="Left" Margin="86,70,0,0" Grid.Row="1" TextWrapping="Wrap" Text="Permissions" VerticalAlignment="Top"/>

@@ -37,11 +37,22 @@ namespace Sariou_Bot.Components
             ConnectBot.Visibility = Visibility.Visible;
             DisconnectBot.Visibility = Visibility.Hidden;
             SariouBotView.IsBotConnected += BotConnection;
+            SariouBotView.LogEvent += LogEvent;
         }
+
+        private void LogEvent(string printMsg)
+        {
+            Dispatcher.Invoke(new Action(delegate ()
+            {
+                ChatBox.AppendText("\r" + printMsg);
+            }));
+        }
+
         public void DisconnectFromTwitch(object  sender, EventArgs e)
         {
             DisconnectBot.Content = "Disconnecting...";
             BotDisconnectPressed?.Invoke();
+            DisconnectBot.IsEnabled = false;
         }
 
         public void ConnectToTwitch(object sender, EventArgs e)
@@ -81,6 +92,7 @@ namespace Sariou_Bot.Components
                 ConnectBot.Visibility = Visibility.Hidden;
                 DisconnectBot.Content = "Disconnect";
                 DisconnectBot.Visibility = Visibility.Visible;
+                DisconnectBot.IsEnabled = true;
             }));
         }
 

@@ -25,8 +25,10 @@
   <ItemGroup>
     <PackageReference Include="Caliburn.Micro.Core" Version="4.0.210" />
     <PackageReference Include="Dapper" Version="2.0.123" />
+    <PackageReference Include="LibVLCSharp.WPF" Version="3.6.6" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.116" />
     <PackageReference Include="TwitchLib" Version="3.3.0" />
+    <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.17.4" />
   </ItemGroup>
 
   <ItemGroup>

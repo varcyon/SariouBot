@@ -101,7 +101,7 @@ namespace Sariou_Bot
                 var result = conn.Execute(insertQuery, new
                 {
                     @Command = command.Command,
-                    @Filepath = command.SoundFile,
+                    @Filepath = command.FilePath,
                     @Permission = (int)command.Permission,
                     @Cooldown = command.Cooldown,
                     @CreatedOn = DateTime.Now.ToString()

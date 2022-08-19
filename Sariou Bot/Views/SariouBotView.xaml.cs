@@ -31,6 +31,9 @@ using System.IO;
 using Path = System.IO.Path;
 using System.Media;
 using Sariou_Bot.Components;
+using System.Collections.ObjectModel;
+using LibVLCSharp.WPF;
+using LibVLCSharp.Shared;
 
 namespace Sariou_Bot.Views
 {
@@ -39,6 +42,7 @@ namespace Sariou_Bot.Views
     {
         //EVENTS
         public static event Action<Boolean> IsBotConnected;
+        public static event Action<string> LogEvent;
         ///
 
        public string TwitchChannelName = "";
@@ -48,14 +52,17 @@ namespace Sariou_Bot.Views
         public static Settings? Settings;
 
 
-       public List<Models.SimpleCommand> simpleCommands = new List<Models.SimpleCommand>();
-       public List<Models.SoundCommand> soundCommands = new List<Models.SoundCommand>();
-       public Boolean simpleCommandsGridNeedsRefresh = false;
-       public Boolean soundCommandsGridNeedsRefresh = false;
-       private List<Viewer> viewersDB = new List<Viewer>();
-       private List<Viewer> viewersToAddToDB = new List<Viewer>();
-       private Queue<Action> commandsQUE = new Queue<Action>();
+       public ObservableCollection<Models.SimpleCommand> simpleCommands = new ObservableCollection<Models.SimpleCommand>();
+       public ObservableCollection<Models.SoundCommand> soundCommands = new ObservableCollection<Models.SoundCommand>();
 
+       private ObservableCollection<Viewer> viewersDB = new ObservableCollection<Viewer>();
+       private ObservableCollection<Viewer> viewersToAddToDB = new ObservableCollection<Viewer>();
+       private Queue<Action> simpleCommandQUE = new Queue<Action>();
+        private Queue<Action> soundCommandQUE = new Queue<Action>();
+
+        LibVLC libVLC = new LibVLC();
+        Media media;
+        LibVLCSharp.Shared.MediaPlayer mp;
         public SariouBotView()
         {   
             Settings = DAO.LoadBotSettings()[0];
@@ -63,13 +70,14 @@ namespace Sariou_Bot.Views
         }
 
         public void SariouBot_Load(object sender, EventArgs e)
-       {    
-           
-           SetUpTwitchAPI();
+       {
+            media = new Media(libVLC, " ");
+            mp = new LibVLCSharp.Shared.MediaPlayer(media);
+            SetUpTwitchAPI();
            
            //TODO: Get VIEWERDB
-           simpleCommands = new List<Models.SimpleCommand>(DAO.LoadSimpleCommands());
-
+           simpleCommands = new ObservableCollection<Models.SimpleCommand>(DAO.LoadSimpleCommands());
+           soundCommands = new ObservableCollection<Models.SoundCommand>(DAO.LoadSoundCommands());
 
             RunInBackground(TimeSpan.FromSeconds(1), () => Update());
        }
@@ -83,6 +91,18 @@ namespace Sariou_Bot.Views
 
             HomeComponent.ConnectTwitchBot += ConnectTwitchBot;
             HomeComponent.BotDisconnectPressed += Disconnect_Click;
+            SimpleCommandsComponent.SimpleCommandAdded += SimpleCommandsComponent_SimpleCommandAdded;
+            SoundCommandComponent.SoundCommandAdded += SoundCommandComponent_SoundCommandAdded;
+        }
+
+        private void SoundCommandComponent_SoundCommandAdded(SoundCommand command)
+        {
+            soundCommands.Add(command);
+        }
+
+        private void SimpleCommandsComponent_SimpleCommandAdded(SimpleCommand command)
+        {
+            simpleCommands.Add(command);
         }
 
         private void ConnectTwitchBot(string channelName)
@@ -113,59 +133,94 @@ namespace Sariou_Bot.Views
 
 
 
-private void Client_OnExistingUsersDetected(object? sender, OnExistingUsersDetectedArgs e)
-{
-  var exisitingUsers = e.Users;
-  foreach (var user in exisitingUsers)
-  {
-      Log($"{user}");
-  }
-}
+        private void Client_OnExistingUsersDetected(object? sender, OnExistingUsersDetectedArgs e)
+        {
+            var exisitingUsers = e.Users;
+            foreach (var user in exisitingUsers)
+            {
+                Log($"{user}");
+            }
+        }
 
-private void Client_OnLog(object? sender, OnLogArgs e)
-{
-  Log($"OnLog: {e.Data}");
-}
+        private void Client_OnLog(object? sender, OnLogArgs e)
+        {
+            Log($"OnLog: {e.Data}");
+        }
 
-private void Client_OnWhisperCommandReceived(object? sender, OnWhisperCommandReceivedArgs e)
-{
-}
+        private void Client_OnWhisperCommandReceived(object? sender, OnWhisperCommandReceivedArgs e)
+        {
+        }
 
-private void Client_OnNewSubscriber(object? sender, OnNewSubscriberArgs e)
-{
-}
+        private void Client_OnNewSubscriber(object? sender, OnNewSubscriberArgs e)
+        {
+        }
 
-private void Client_OnWhisperReceived(object? sender, OnWhisperReceivedArgs e)
-{
-}
+        private void Client_OnWhisperReceived(object? sender, OnWhisperReceivedArgs e)
+        {
+        }
 
-private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
-{
-  Log($"{e.ChatMessage.DisplayName}: {e.ChatMessage.UserId} {e.ChatMessage.IsModerator} {e.ChatMessage.IsVip} {e.ChatMessage.IsBroadcaster} {e.ChatMessage.IsSubscriber}");
-}
+        private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
+        {
+            Log($"{e.ChatMessage.DisplayName}: {e.ChatMessage.UserId} {e.ChatMessage.IsModerator} {e.ChatMessage.IsVip} {e.ChatMessage.IsBroadcaster} {e.ChatMessage.IsSubscriber}");
+        }
 
-private void Client_OnUserLeft(object? sender, OnUserLeftArgs e)
-{
-  Log($"{e.Username}  has Left");
+        private void Client_OnUserLeft(object? sender, OnUserLeftArgs e)
+        {
+            Log($"{e.Username}  has Left");
 
-}
+        }
 
-private void Client_OnUserJoined(object? sender, OnUserJoinedArgs e)
-{
-  Log($"{e.Username}  has joined");
-}
+        private void Client_OnUserJoined(object? sender, OnUserJoinedArgs e)
+        {
+            Log($"{e.Username}  has joined");
+        }
 
-private void Client_OnJoinedChannel(object? sender, OnJoinedChannelArgs e)
-{
-  bot.SendMessage(TwitchChannelName, "I have arrived!");
+        private void Client_OnJoinedChannel(object? sender, OnJoinedChannelArgs e)
+        {
+            bot.SendMessage(TwitchChannelName, Settings.ArrivalMessage);
 
-}
+        }
 
-private void Client_OnChatCommandReceived(object? sender, OnChatCommandReceivedArgs e)
-{
-  commandsQUE.Enqueue(() => RunCommand(e));
-
-}
+        private void Client_OnChatCommandReceived(object? sender, OnChatCommandReceivedArgs e)
+        {
+            string commandText = e.Command.CommandText.ToLower();
+            //Dynamic command
+            foreach (SimpleCommand command in simpleCommands)
+            {
+                if (commandText.Equals(command.command, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!command.onCooldown)
+                    {
+                        simpleCommandQUE.Enqueue(() => RunSimpleCommand(e));
+                        if (command.cooldown > 0)
+                        {
+                            command.SetOnCooldown(true);
+                        }
+                    }
+                    else { 
+                        bot.SendMessage(TwitchChannelName, $"sorry {commandText} is on cooldown for another {command.cooldown - command.timer} seconds.");
+                    }
+                }
+            }
+            foreach (SoundCommand command in soundCommands)
+            {
+                if (commandText.Equals(command.Command, StringComparison.OrdinalIgnoreCase))
+                {
+                    if (!command.onCooldown)
+                    {
+                        soundCommandQUE.Enqueue(() => RunSoundCommand(e));
+                        if(command.Cooldown > 0)
+                        {
+                            command.SetOnCooldown(true);
+                        }
+                    }
+                    else
+                    {
+                        bot.SendMessage(TwitchChannelName, $"sorry {commandText} is on cooldown for another {command.Cooldown - command.timer} seconds.");
+                    }
+                }
+            }
+        }
         private void Client_Disconnect(object? sender, OnDisconnectedEventArgs e)
         {
             Log($"SariouBot Disconnected!");
@@ -180,19 +235,6 @@ private void Client_OnChatCommandReceived(object? sender, OnChatCommandReceivedA
 
         }
         /*
-        private void AddSimpleCommandBtn(object sender, RoutedEventArgs e)
-        {
-          Models.SimpleCommand commandToAdd = new Models.SimpleCommand(CommandName.Text,(isAutomated.IsChecked == true)? 1:0,float.Parse(CommandCooldown.Text), CommandContent.Text, CommandPermissions.SelectedIndex, DateTime.Now.ToString());
-          DAO.SaveSimpleChatCommand(commandToAdd);
-          simpleCommandsGridNeedsRefresh = true;
-        }
-        private void AddSoundCommandBtn(object sender, RoutedEventArgs e)
-        {
-          Models.SoundCommand commandToAdd = new Models.SoundCommand(CommandName.Text, SoundCommandFilePath.Text, CommandPermissions.SelectedIndex,float.Parse(SoundCommandCooldown.Text), DateTime.Now.ToString());
-          DAO.SaveSoundCommand(commandToAdd);
-          soundCommandsGridNeedsRefresh = true;
-        }
-
 
         async public void GetChannelChatters(object sender, RoutedEventArgs e)
         {
@@ -259,63 +301,64 @@ private void Client_OnChatCommandReceived(object? sender, OnChatCommandReceivedA
         {
           viewersToAddToDB.Add(new Viewer(user.Id, user.Login, user.DisplayName, 0));
         }
-
- 
-
+        */
 
 
-        // Refresh the data grid to show timer.. DO WE WANT / NEED this?
-        private void refreshSimpleCommandsGrid()
-        {
-          SimpleCommands.ItemsSource = null;
-          simpleCommands = new List<Models.SimpleCommand>(DAO.LoadSimpleCommands());
-          SimpleCommands.ItemsSource = simpleCommands;
-        }
-        private void refreshSoundCommandsGrid()
-        {
-          SoundCommands.ItemsSource = null;
-          soundCommands = new List<Models.SoundCommand>(DAO.LoadSoundCommands());
-          SoundCommands.ItemsSource = soundCommands;
-        }
+
+
+
         private void updateCommandsTimer()
         {
-          foreach (var command in simpleCommands)
-          {
-              if (command.onCooldown)
-              {
-                  if(command.timer >= command.cooldown)
-                  {
-                      command.SetOnCooldown(false);
-                      command.ResetTimer();
-                  }
-                  else
-                  {
-                      command.UpdateTimer(1);
-                  }
-              }
-          }
+            foreach (var command in simpleCommands)
+            {
+                if (command.onCooldown)
+                {
+                    if (command.timer >= command.cooldown)
+                    {
+                        command.SetOnCooldown(false);
+                        command.ResetTimer();
+                    }
+                    else
+                    {
+                        command.UpdateTimer(1);
+                    }
+                }
+            }
+            foreach (var command in soundCommands)
+            {
+                if (command.onCooldown)
+                {
+                    if (command.timer >= command.Cooldown)
+                    {
+                        command.SetOnCooldown(false);
+                        command.ResetTimer();
+                    }
+                    else
+                    {
+                        command.UpdateTimer(1);
+                    }
+                }
+            }
         }
-        private void OpenSoundFileDialog(object sender, RoutedEventArgs e)
-        {
-          OpenFileDialog openFileDialog = new OpenFileDialog();
-          openFileDialog.InitialDirectory = Environment.CurrentDirectory;
-          openFileDialog.Filter = "Sound Files (*.wav)|*.wav";
-          if (openFileDialog.ShowDialog() == true)
-              SoundCommandFilePath.Text = Path.GetFullPath(openFileDialog.FileName);
-        }
+        
+
 
         private void PlaySound(string path)
         {
-          SoundPlayer soundCommand = new SoundPlayer(path);
-          soundCommand.PlaySync();
+            media = new Media(libVLC, path);
+            mp = new LibVLCSharp.Shared.MediaPlayer(media);
+            mp.Play();
+          //SoundPlayer soundCommand = new SoundPlayer(path);
+          //soundCommand.PlaySync();
+
         }
 
-        */
+        
         private void Disconnect_Click()
         {
             if (bot.IsConnected)
             {
-                bot.SendMessage(TwitchChannelName, "Taking the blue pill!");
+                bot.SendMessage(TwitchChannelName, Settings.DepartureMessage);
                 Task.Run(() => {
                     bot.Disconnect();
                 }).ConfigureAwait(false);
@@ -324,14 +367,10 @@ private void Client_OnChatCommandReceived(object? sender, OnChatCommandReceivedA
         }
         private void Log(string printMsg)
         {
-
-            Dispatcher.Invoke(new Action(delegate ()
-            {
-               // ChatBox.AppendText("\r" + printMsg);
-            }));
+            LogEvent?.Invoke(printMsg);
             Console.WriteLine(printMsg);
         }
-        private void RunCommand(OnChatCommandReceivedArgs e)
+        private void RunSimpleCommand(OnChatCommandReceivedArgs e)
         {
             string commandText = e.Command.CommandText.ToLower();
             //Dynamic command
@@ -339,28 +378,42 @@ private void Client_OnChatCommandReceived(object? sender, OnChatCommandReceivedA
             {
                 if (commandText.Equals(command.command, StringComparison.OrdinalIgnoreCase))
                 {
+
                     bot.SendMessage(TwitchChannelName, command.content);
                 }
             }
-
         }
+
+        private void RunSoundCommand(OnChatCommandReceivedArgs e)
+        {
+            string commandText = e.Command.CommandText.ToLower();
+            //Dynamic command
+            foreach (Models.SoundCommand command in soundCommands)
+            {
+                if (commandText.Equals(command.Command, StringComparison.OrdinalIgnoreCase))
+                {
+                    PlaySound(command.FilePath);
+                }
+            }
+        }
+
         private void Update()
         {
-            if (simpleCommandsGridNeedsRefresh)
-            {
-                simpleCommandsGridNeedsRefresh = false;
-                //refreshSimpleCommandsGrid();
-            }
-            if (soundCommandsGridNeedsRefresh)
-            {
-                soundCommandsGridNeedsRefresh = false;
-                //refreshSoundCommandsGrid();
-            }
+            updateCommandsTimer();
             //deque command and run it on a Task
-            if (commandsQUE.Count > 0)
+            if (simpleCommandQUE.Count > 0)
             {
-                Action command = commandsQUE.Dequeue();
+                Action command = simpleCommandQUE.Dequeue();
                 Task.Run(() => command.Invoke());
+            }
+            if( soundCommandQUE.Count > 0)
+            {
+                if (!mp.IsPlaying)
+                {
+                    Action command = soundCommandQUE.Dequeue();
+                    command.Invoke();
+                }
+                
             }
         }
         async Task RunInBackground(TimeSpan timeSpan, Action action)
