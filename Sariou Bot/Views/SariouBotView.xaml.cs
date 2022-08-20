@@ -49,20 +49,20 @@ namespace Sariou_Bot.Views
        ConnectionCredentials creds = new ConnectionCredentials(BotInfo.BotName, BotInfo.AccessToken);
        private TwitchClient? bot;
        public TwitchAPI? twitchAPI;
-        public static Settings? Settings;
-
+       public static Settings? Settings;
 
        public ObservableCollection<Models.SimpleCommand> simpleCommands = new ObservableCollection<Models.SimpleCommand>();
        public ObservableCollection<Models.SoundCommand> soundCommands = new ObservableCollection<Models.SoundCommand>();
+       private Queue<Action> simpleCommandQUE = new Queue<Action>();
+       private Queue<Action> soundCommandQUE = new Queue<Action>();
 
        private ObservableCollection<Viewer> viewersDB = new ObservableCollection<Viewer>();
        private ObservableCollection<Viewer> viewersToAddToDB = new ObservableCollection<Viewer>();
-       private Queue<Action> simpleCommandQUE = new Queue<Action>();
-        private Queue<Action> soundCommandQUE = new Queue<Action>();
-
+        //For Playing sounds
         LibVLC libVLC = new LibVLC();
         Media media;
         LibVLCSharp.Shared.MediaPlayer mp;
+        // //
         public SariouBotView()
         {   
             Settings = DAO.LoadBotSettings()[0];
@@ -79,8 +79,28 @@ namespace Sariou_Bot.Views
            simpleCommands = new ObservableCollection<Models.SimpleCommand>(DAO.LoadSimpleCommands());
            soundCommands = new ObservableCollection<Models.SoundCommand>(DAO.LoadSoundCommands());
 
+#pragma warning disable CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
             RunInBackground(TimeSpan.FromSeconds(1), () => Update());
-       }
+#pragma warning restore CS4014 // Because this call is not awaited, execution of the current method continues before the call is completed
+        }
+        private void Update()
+        {
+            updateCommandsTimer();
+            if (simpleCommandQUE.Count > 0)
+            {
+                Action command = simpleCommandQUE.Dequeue();
+                Task.Run(() => command.Invoke());
+            }
+            if (soundCommandQUE.Count > 0)
+            {
+                if (!mp.IsPlaying)
+                {
+                    Action command = soundCommandQUE.Dequeue();
+                    command.Invoke();
+                }
+
+            }
+        }
         private void SetUpTwitchAPI()
         {
             Debug.WriteLine("Setting up TwitchAPI.");
@@ -99,12 +119,10 @@ namespace Sariou_Bot.Views
         {
             soundCommands.Add(command);
         }
-
         private void SimpleCommandsComponent_SimpleCommandAdded(SimpleCommand command)
         {
             simpleCommands.Add(command);
         }
-
         private void ConnectTwitchBot(string channelName)
         {
             {
@@ -132,7 +150,7 @@ namespace Sariou_Bot.Views
 
 
 
-
+        // // Twitch Events // //
         private void Client_OnExistingUsersDetected(object? sender, OnExistingUsersDetectedArgs e)
         {
             var exisitingUsers = e.Users;
@@ -161,6 +179,7 @@ namespace Sariou_Bot.Views
 
         private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
         {
+            var x = e.ChatMessage.UserType;
             Log($"{e.ChatMessage.DisplayName}: {e.ChatMessage.UserId} {e.ChatMessage.IsModerator} {e.ChatMessage.IsVip} {e.ChatMessage.IsBroadcaster} {e.ChatMessage.IsSubscriber}");
         }
 
@@ -189,36 +208,76 @@ namespace Sariou_Bot.Views
             {
                 if (commandText.Equals(command.command, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!command.onCooldown)
+                    if (GetUserSecurityLevel(e) >= (int)command.permission)
                     {
-                        simpleCommandQUE.Enqueue(() => RunSimpleCommand(e));
-                        if (command.cooldown > 0)
+                        if (!command.onCooldown)
                         {
-                            command.SetOnCooldown(true);
+                            simpleCommandQUE.Enqueue(() => RunSimpleCommand(e));
+                            if (command.cooldown > 0)
+                            {
+                                command.SetOnCooldown(true);
+                            }
+                        }
+                        else
+                        {
+                            bot.SendMessage(TwitchChannelName, $"sorry {commandText} is on cooldown for another {command.cooldown - command.timer} seconds.");
                         }
                     }
-                    else { 
-                        bot.SendMessage(TwitchChannelName, $"sorry {commandText} is on cooldown for another {command.cooldown - command.timer} seconds.");
-                    }
+                    break;
                 }
             }
             foreach (SoundCommand command in soundCommands)
             {
                 if (commandText.Equals(command.Command, StringComparison.OrdinalIgnoreCase))
                 {
-                    if (!command.onCooldown)
+                    if (GetUserSecurityLevel(e) >= (int)command.Permission)
                     {
-                        soundCommandQUE.Enqueue(() => RunSoundCommand(e));
-                        if(command.Cooldown > 0)
+                        if (!command.onCooldown)
                         {
-                            command.SetOnCooldown(true);
+                            soundCommandQUE.Enqueue(() => RunSoundCommand(e));
+                            if (command.Cooldown > 0)
+                            {
+                                command.SetOnCooldown(true);
+                            }
+                        }
+                        else
+                        {
+                            bot.SendMessage(TwitchChannelName, $"sorry {commandText} is on cooldown for another {command.Cooldown - command.timer} seconds.");
                         }
                     }
-                    else
-                    {
-                        bot.SendMessage(TwitchChannelName, $"sorry {commandText} is on cooldown for another {command.Cooldown - command.timer} seconds.");
-                    }
+                    break;
                 }
+            }
+        }
+        // // // // // // //
+        private int GetUserSecurityLevel(OnChatCommandReceivedArgs e)
+        {
+            int securityLevel;
+
+            if (e.Command.ChatMessage.IsBroadcaster)
+            {
+                securityLevel = 4;
+                return securityLevel;
+            }
+            else if (e.Command.ChatMessage.IsModerator)
+            {
+                securityLevel = 3;
+                return securityLevel;
+            }
+            else if (e.Command.ChatMessage.IsVip)
+            {
+                securityLevel = 2;
+                return securityLevel;
+            }
+            else if (e.Command.ChatMessage.IsSubscriber)
+            {
+                securityLevel = 1;
+                return securityLevel;
+            }
+            else
+            {
+                securityLevel = 0;
+                return securityLevel;
             }
         }
         private void Client_Disconnect(object? sender, OnDisconnectedEventArgs e)
@@ -226,7 +285,6 @@ namespace Sariou_Bot.Views
             Log($"SariouBot Disconnected!");
             IsBotConnected?.Invoke(false);
         }
-
         private void Client_OnConnected(object? sender, OnConnectedArgs e)
         {
             Log($"{e.BotUsername} Connected!");
@@ -340,20 +398,12 @@ namespace Sariou_Bot.Views
                 }
             }
         }
-        
-
-
         private void PlaySound(string path)
         {
             media = new Media(libVLC, path);
             mp = new LibVLCSharp.Shared.MediaPlayer(media);
             mp.Play();
-          //SoundPlayer soundCommand = new SoundPlayer(path);
-          //soundCommand.PlaySync();
-
         }
-
-        
         private void Disconnect_Click()
         {
             if (bot.IsConnected)
@@ -383,7 +433,6 @@ namespace Sariou_Bot.Views
                 }
             }
         }
-
         private void RunSoundCommand(OnChatCommandReceivedArgs e)
         {
             string commandText = e.Command.CommandText.ToLower();
@@ -397,25 +446,7 @@ namespace Sariou_Bot.Views
             }
         }
 
-        private void Update()
-        {
-            updateCommandsTimer();
-            //deque command and run it on a Task
-            if (simpleCommandQUE.Count > 0)
-            {
-                Action command = simpleCommandQUE.Dequeue();
-                Task.Run(() => command.Invoke());
-            }
-            if( soundCommandQUE.Count > 0)
-            {
-                if (!mp.IsPlaying)
-                {
-                    Action command = soundCommandQUE.Dequeue();
-                    command.Invoke();
-                }
-                
-            }
-        }
+
         async Task RunInBackground(TimeSpan timeSpan, Action action)
         {
             var periodicTimer = new PeriodicTimer(timeSpan);

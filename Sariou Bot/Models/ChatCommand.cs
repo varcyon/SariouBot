@@ -5,9 +5,9 @@ namespace Sariou_Bot.Models
     public enum Permission
         {
             Viewer,
-            Sub,
+            Subscriber,
             VIP,
-            Mod,
+            Moderator,
             Broadcaster
         }
         public enum Automated

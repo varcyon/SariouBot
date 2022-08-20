@@ -1,0 +1,40 @@
+STREAMER
+OnLog: Received:
+ @badge-info=;
+ badges=broadcaster/1;
+ client-nonce=fb169242592baa4ee966e34c79a0601c;
+ color=#008BFF;
+ display-name=Varcy0n;
+ emotes=;
+ first-msg=0;
+ flags=;
+ id=75d302a3-d2b5-440e-a791-dd66d47d55ae;
+ mod=0;
+ returning-chatter=0;
+ room-id=37078197;
+ subscriber=0;
+ tmi-sent-ts=1660018294063;
+ turbo=0;
+ user-id=37078197;
+ user-type= :varcy0n!varcy0n@varcy0n.tmi.twitch.tv PRIVMSG #varcy0n :Testing
+
+
+ MOD.
+ OnLog: Received: 
+ @badge-info=;
+ badges=moderator/1;
+ client-nonce=d17b3eb3ff918028a4621501a665b93a;
+ color=;
+ display-name=VarcyonSariouGames;
+ emotes=;
+ first-msg=0;
+ flags=;
+ id=e6a77584-841e-42d0-a396-395974cc60f3;
+ mod=1;
+ eturning-chatter=0;
+ room-id=37078197;
+ subscriber=0;
+ tmi-sent-ts=1660019718517;
+ turbo=0;
+ user-id=494487910;
+ user-type=mod :varcyonsariougames!varcyonsariougames@varcyonsariougames.tmi.twitch.tv PRIVMSG #varcy0n :Hello
