@@ -50,29 +50,26 @@ namespace Sariou_Bot
             }
 
         }
-        public static void AddNewUsers(List<Viewer> listToAdd)
+        public static List<Viewer> LoadViewers()
         {
-            List<Task> tasks = new List<Task>();
-            foreach (Viewer viewer in listToAdd)
-            {
-                tasks.Add(Task.Run(() =>
-                {
-
-                }
-                ));
-            }
-
             using (IDbConnection conn = new SQLiteConnection(LoadConnectionString()))
             {
-                conn.Query<SimpleCommand>("SELECT * FROM SimpleChatCommands", new DynamicParameters());    
-                
+                var result = conn.Query<Viewer>("SELECT * FROM Viewers", new DynamicParameters());
+                return (List<Viewer>)result;
             }
         }
         public static void InsertViewerToDB(Viewer viewer)
         {
             using (IDbConnection conn = new SQLiteConnection(LoadConnectionString()))
             {
-                conn.Execute("INSERT into SimpleChatCommands (Command,Content) VALUES (@Command,@Content)", viewer);
+                string insertQuery = @"INSERT into Viewers (ViewerID,Username,DisplayName) VALUES (@ViewerID,@Username,@DisplayName)";
+                var result = conn.Execute(insertQuery, new
+                {
+                    @ViewerID = viewer.ViewerID,
+                    @Username = viewer.Username,
+                    @DisplayName = viewer.DisplayName
+                });
+
             }
         }
 

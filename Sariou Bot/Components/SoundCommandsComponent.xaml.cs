@@ -47,5 +47,6 @@ namespace Sariou_Bot.Components
             SoundCommands.Items.Refresh();
             SoundCommandAdded?.Invoke(command);
         }
+
     }
 }

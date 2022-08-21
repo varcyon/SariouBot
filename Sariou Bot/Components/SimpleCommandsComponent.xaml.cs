@@ -38,5 +38,14 @@ namespace Sariou_Bot.Components
             SimpleCommands.Items.Refresh();
             SimpleCommandAdded?.Invoke(command);
         }
+
+        private void autoCheckChanged(object sender, RoutedEventArgs e)
+        {
+            if ((bool)isAutomated.IsChecked)
+            {
+                CommandCooldown.IsEnabled = true;
+            }
+            else { CommandCooldown.IsEnabled = false; }
+        }
     }
 }

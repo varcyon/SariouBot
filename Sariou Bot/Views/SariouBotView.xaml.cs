@@ -47,8 +47,9 @@ namespace Sariou_Bot.Views
 
        public string TwitchChannelName = "";
        ConnectionCredentials creds = new ConnectionCredentials(BotInfo.BotName, BotInfo.AccessToken);
+       public static User broadcaster;
        private TwitchClient? bot;
-       public TwitchAPI? twitchAPI;
+       public static TwitchAPI? twitchAPI;
        public static Settings? Settings;
 
        public ObservableCollection<Models.SimpleCommand> simpleCommands = new ObservableCollection<Models.SimpleCommand>();
@@ -57,7 +58,8 @@ namespace Sariou_Bot.Views
        private Queue<Action> soundCommandQUE = new Queue<Action>();
 
        private ObservableCollection<Viewer> viewersDB = new ObservableCollection<Viewer>();
-       private ObservableCollection<Viewer> viewersToAddToDB = new ObservableCollection<Viewer>();
+       private Queue<Action> viewersToAddToDBQUE = new Queue<Action>();
+
         //For Playing sounds
         LibVLC libVLC = new LibVLC();
         Media media;
@@ -74,8 +76,7 @@ namespace Sariou_Bot.Views
             media = new Media(libVLC, " ");
             mp = new LibVLCSharp.Shared.MediaPlayer(media);
             SetUpTwitchAPI();
-           
-           //TODO: Get VIEWERDB
+           viewersDB = new ObservableCollection<Viewer>(DAO.LoadViewers());
            simpleCommands = new ObservableCollection<Models.SimpleCommand>(DAO.LoadSimpleCommands());
            soundCommands = new ObservableCollection<Models.SoundCommand>(DAO.LoadSoundCommands());
 
@@ -86,7 +87,7 @@ namespace Sariou_Bot.Views
         private void Update()
         {
             updateCommandsTimer();
-            if (simpleCommandQUE.Count > 0)
+            while (simpleCommandQUE.Count > 0)
             {
                 Action command = simpleCommandQUE.Dequeue();
                 Task.Run(() => command.Invoke());
@@ -98,8 +99,9 @@ namespace Sariou_Bot.Views
                     Action command = soundCommandQUE.Dequeue();
                     command.Invoke();
                 }
-
             }
+
+            
         }
         private void SetUpTwitchAPI()
         {
@@ -108,13 +110,21 @@ namespace Sariou_Bot.Views
             twitchAPI.Settings.AccessToken = BotInfo.AccessToken;
             twitchAPI.Settings.ClientId = BotInfo.ClientId;
             twitchAPI.Settings.Secret = BotInfo.ClientSecret;
-
+            List<string> broadcasterList = new List<string>() { Settings.ChannelName };
             HomeComponent.ConnectTwitchBot += ConnectTwitchBot;
             HomeComponent.BotDisconnectPressed += Disconnect_Click;
             SimpleCommandsComponent.SimpleCommandAdded += SimpleCommandsComponent_SimpleCommandAdded;
             SoundCommandComponent.SoundCommandAdded += SoundCommandComponent_SoundCommandAdded;
+            broadcaster = ((twitchAPI.Helix.Users.GetUsersAsync(logins: broadcasterList)).Result.Users)[0];
+
         }
 
+
+
+        public static Boolean IsFollower(string user)
+        {
+           return twitchAPI.Helix.Users.GetUsersFollowsAsync(fromId: user , toId: broadcaster.Id).Result.Follows.Length == 1? true:false;
+        }
         private void SoundCommandComponent_SoundCommandAdded(SoundCommand command)
         {
             soundCommands.Add(command);
@@ -133,7 +143,6 @@ namespace Sariou_Bot.Views
                 bot.OnDisconnected += Client_Disconnect;
                 //bot.OnLog += Client_OnLog;
                 bot.OnChatCommandReceived += Client_OnChatCommandReceived;
-                bot.OnExistingUsersDetected += Client_OnExistingUsersDetected;
 
                 bot.OnJoinedChannel += Client_OnJoinedChannel;
                 bot.OnUserJoined += Client_OnUserJoined;
@@ -143,22 +152,13 @@ namespace Sariou_Bot.Views
                 bot.OnNewSubscriber += Client_OnNewSubscriber;
                 bot.OnWhisperCommandReceived += Client_OnWhisperCommandReceived;
                 bot.Connect();
+                
+                
             }
         }
-
-    
-
-
 
         // // Twitch Events // //
-        private void Client_OnExistingUsersDetected(object? sender, OnExistingUsersDetectedArgs e)
-        {
-            var exisitingUsers = e.Users;
-            foreach (var user in exisitingUsers)
-            {
-                Log($"{user}");
-            }
-        }
+
 
         private void Client_OnLog(object? sender, OnLogArgs e)
         {
@@ -179,24 +179,24 @@ namespace Sariou_Bot.Views
 
         private void Client_OnMessageReceived(object? sender, OnMessageReceivedArgs e)
         {
-            var x = e.ChatMessage.UserType;
-            Log($"{e.ChatMessage.DisplayName}: {e.ChatMessage.UserId} {e.ChatMessage.IsModerator} {e.ChatMessage.IsVip} {e.ChatMessage.IsBroadcaster} {e.ChatMessage.IsSubscriber}");
+
         }
 
         private void Client_OnUserLeft(object? sender, OnUserLeftArgs e)
         {
             Log($"{e.Username}  has Left");
-
         }
 
         private void Client_OnUserJoined(object? sender, OnUserJoinedArgs e)
         {
+            //TODO: Check if user is in the database. Add them it their not
             Log($"{e.Username}  has joined");
         }
 
         private void Client_OnJoinedChannel(object? sender, OnJoinedChannelArgs e)
         {
             bot.SendMessage(TwitchChannelName, Settings.ArrivalMessage);
+            GetChannelChatters();
 
         }
 
@@ -292,20 +292,18 @@ namespace Sariou_Bot.Views
 
 
         }
-        /*
-
-        async public void GetChannelChatters(object sender, RoutedEventArgs e)
+        async public void GetChannelChatters()
         {
           Log($"Getting Chatters Started");
-          TwitchChannelName = ChannelName.Text;
           List<User> users = new List<User>();
 
-          var currentChatters = await twitchAPI.Undocumented.GetChattersAsync(TwitchChannelName);
+          var currentChatters = await twitchAPI.Undocumented.GetChattersAsync(Settings.ChannelName);
           List<String> viewerList = new List<String>();
           foreach (var chatter in currentChatters)
           {
               viewerList.Add(chatter.Username);
           }
+           Log($"There are {viewerList.Count} viewers in chat.");
 
 
           //TODO: CANT DO MORE THAN 100 AT A TIME.. SPLIT IT UP
@@ -318,7 +316,7 @@ namespace Sariou_Bot.Views
               List<String> slicedList;
               if (viewerList.Count > max)
               {
-                  slicedList = viewerList.GetRange(min,max );
+                  slicedList = viewerList.GetRange(min,100);
               }else{
                   slicedList = viewerList.GetRange(min, viewerList.Count);
               }
@@ -326,45 +324,35 @@ namespace Sariou_Bot.Views
           }
           foreach (var user in users)
           {
+              
               if (viewersDB != null && viewersDB.Count > 0)
               {
                   if (!viewersDB.Any(x => x.Username == user.Login))
                   {
-                      //Add new Viewer                   
-                      AddNEWUserToViewerDB(user);
+                        //Add new Viewer                   
+                        viewersToAddToDBQUE.Enqueue(() => AddNEWUserToViewerDB(user)); 
                   }
               }
               else
               {
-                  //Add new Viewer
-                  AddNEWUserToViewerDB(user);
-              }
-          }
-
-          Log($"Getting Chatters Finished");
+                    //Add new Viewer
+                    viewersToAddToDBQUE.Enqueue(() => AddNEWUserToViewerDB(user));
+                }
+            }
+            
+            while (viewersToAddToDBQUE.Count > 0)
+            {
+                Action command = viewersToAddToDBQUE.Dequeue();
+                Task.Run(() => command.Invoke());
+                Log($"Getting Chatters Finished");
+            }
+           
         }
-
-
-        private void autoCheckChanged(object sender, RoutedEventArgs e)
-        {
-          if ((bool)isAutomated.IsChecked)
-          {
-              CommandCooldown.IsEnabled = true;
-          }
-          else { CommandCooldown.IsEnabled = false; }
-        }
-
-
         private void AddNEWUserToViewerDB(User user)
         {
-          viewersToAddToDB.Add(new Viewer(user.Id, user.Login, user.DisplayName, 0));
+            DAO.InsertViewerToDB(new Viewer(user.Id, user.Login, user.DisplayName));
+
         }
-        */
-
-
-
-
-
         private void updateCommandsTimer()
         {
             foreach (var command in simpleCommands)
@@ -445,8 +433,6 @@ namespace Sariou_Bot.Views
                 }
             }
         }
-
-
         async Task RunInBackground(TimeSpan timeSpan, Action action)
         {
             var periodicTimer = new PeriodicTimer(timeSpan);
