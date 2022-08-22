@@ -34,7 +34,7 @@ namespace Sariou_Bot
         {
             using (IDbConnection conn = new SQLiteConnection(LoadConnectionString()))
             {
-                var result = conn.Query<Settings>("SELECT * FROM BotSettings LIMIT 1", new DynamicParameters());
+                var result = conn.Query<Settings>("SELECT * FROM BotSettings", new DynamicParameters());
                 return (List<Settings>)result;
             }
         }

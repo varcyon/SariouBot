@@ -1,8 +1,10 @@
 ﻿using Sariou_Bot.Models;
+using Sariou_Bot.ViewModels;
 using Sariou_Bot.Views;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
@@ -96,6 +98,11 @@ namespace Sariou_Bot.Components
             }));
         }
 
-
+        private void TwitchLogin(object sender, RoutedEventArgs e)
+        {
+            TwitchAuthViewModel twitchAuthViewModel = new TwitchAuthViewModel();
+            Twitch_Authentication LoginWindow = new Twitch_Authentication(twitchAuthViewModel);
+            LoginWindow.Show();
+        }
     }
 }

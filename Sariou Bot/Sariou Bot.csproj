@@ -2,17 +2,22 @@
 
   <PropertyGroup>
     <OutputType>WinExe</OutputType>
-    <TargetFramework>net6.0-windows</TargetFramework>
+    <TargetFramework>net6.0-windows10.0.22621.0</TargetFramework>
     <RootNamespace>Sariou_Bot</RootNamespace>
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
+    <Platforms>AnyCPU;x86</Platforms>
   </PropertyGroup>
 
   <ItemGroup>
+    <None Remove="Models\Scopes.txt" />
     <None Remove="sarioubot.db" />
   </ItemGroup>
 
   <ItemGroup>
+    <Content Include="Scopes.txt">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
     <Content Include="sarioubot.db">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -23,11 +28,12 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Caliburn.Micro.Core" Version="4.0.210" />
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="LibVLCSharp.WPF" Version="3.6.6" />
+    <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.9" />
+    <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1293.44" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.116" />
-    <PackageReference Include="TwitchLib" Version="3.3.0" />
+    <PackageReference Include="TwitchLib" Version="3.4.1" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.17.4" />
   </ItemGroup>
 

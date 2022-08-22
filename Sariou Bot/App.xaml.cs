@@ -1,4 +1,5 @@
-﻿using Sariou_Bot.ViewModels;
+﻿using Microsoft.Win32;
+using Sariou_Bot.ViewModels;
 using System;
 using System.Collections.Generic;
 using System.Configuration;
@@ -14,14 +15,15 @@ namespace Sariou_Bot
     /// </summary>
     public partial class App : Application
     {
+
         protected override void OnStartup(StartupEventArgs e)
         {
+
             MainWindow = new MainWindow()
             {
                 DataContext = new SariouBotViewModel()
-                
             };
-           
+
             MainWindow.Show();
             base.OnStartup(e);
         }

@@ -20,7 +20,6 @@ using TwitchLib.Communication.Events;
 using TwitchLib.Api;
 using Sariou_Bot.Models;
 using TwitchLib.Api.Core.Models.Undocumented.Chatters;
-using TwitchLib.Api.Core.Models.Undocumented.ChatUser;
 using TwitchLib.Api.Interfaces;
 using TwitchLib.Api.Helix.Models.Users.GetUsers;
 using System.Diagnostics;
@@ -34,17 +33,21 @@ using Sariou_Bot.Components;
 using System.Collections.ObjectModel;
 using LibVLCSharp.WPF;
 using LibVLCSharp.Shared;
+using System.Web.Http;
+using System.Net.Http;
+using Sariou_Bot.ViewModels;
 
 namespace Sariou_Bot.Views
 {
 
     public partial class SariouBotView : UserControl
     {
+        public static HttpClient ApiClient { get;  set; }
         //EVENTS
         public static event Action<Boolean> IsBotConnected;
         public static event Action<string> LogEvent;
         ///
-
+        public TwitchAuthViewModel twitchAuth;
        public string TwitchChannelName = "";
        ConnectionCredentials creds = new ConnectionCredentials(BotInfo.BotName, BotInfo.AccessToken);
        public static User broadcaster;
@@ -57,6 +60,8 @@ namespace Sariou_Bot.Views
        private Queue<Action> simpleCommandQUE = new Queue<Action>();
        private Queue<Action> soundCommandQUE = new Queue<Action>();
 
+        private List<ChatterFormatted> previousChatters = new List<ChatterFormatted>();
+        private List<ChatterFormatted> currentChatters = new List<ChatterFormatted>();
        private ObservableCollection<Viewer> viewersDB = new ObservableCollection<Viewer>();
        private Queue<Action> viewersToAddToDBQUE = new Queue<Action>();
 
@@ -69,10 +74,18 @@ namespace Sariou_Bot.Views
         {   
             Settings = DAO.LoadBotSettings()[0];
             InitializeComponent();
+            InitializeWebServer();
+
+        }
+
+        private void InitializeWebServer()
+        {
+            ApiClient = new HttpClient();
         }
 
         public void SariouBot_Load(object sender, EventArgs e)
        {
+            twitchAuth = new TwitchAuthViewModel();
             media = new Media(libVLC, " ");
             mp = new LibVLCSharp.Shared.MediaPlayer(media);
             SetUpTwitchAPI();
@@ -100,8 +113,23 @@ namespace Sariou_Bot.Views
                     command.Invoke();
                 }
             }
+        }
+        private async void PointsUpdate()
+        {
+            //get chatters
+            viewersDB = new ObservableCollection<Viewer>(DAO.LoadViewers());
+            previousChatters = currentChatters;
+            currentChatters = await twitchAPI.Undocumented.GetChattersAsync(Settings.ChannelName);
+            List<ChatterFormatted> viewersToUpdate = new List<ChatterFormatted>();
+            foreach (var chatter in currentChatters)
+            {
+                if (previousChatters.Contains(chatter))
+                {
+                    viewersToUpdate.Add(chatter);
+                }
+            }
+            //twitchAPI.Helix.Subscriptions.CheckUserSubscriptionAsync();
 
-            
         }
         private void SetUpTwitchAPI()
         {
@@ -115,8 +143,8 @@ namespace Sariou_Bot.Views
             HomeComponent.BotDisconnectPressed += Disconnect_Click;
             SimpleCommandsComponent.SimpleCommandAdded += SimpleCommandsComponent_SimpleCommandAdded;
             SoundCommandComponent.SoundCommandAdded += SoundCommandComponent_SoundCommandAdded;
-            broadcaster = ((twitchAPI.Helix.Users.GetUsersAsync(logins: broadcasterList)).Result.Users)[0];
-
+            broadcaster = (twitchAPI.Helix.Users.GetUsersAsync(logins: broadcasterList)).Result.Users[0];
+            //var x = twitchAPI.Helix.Subscriptions.CheckUserSubscriptionAsync(broadcaster.Id, "37078197").Result;
         }
 
 
@@ -195,7 +223,7 @@ namespace Sariou_Bot.Views
 
         private void Client_OnJoinedChannel(object? sender, OnJoinedChannelArgs e)
         {
-            bot.SendMessage(TwitchChannelName, Settings.ArrivalMessage);
+            //bot.SendMessage(TwitchChannelName, Settings.ArrivalMessage);
             GetChannelChatters();
 
         }
@@ -297,7 +325,7 @@ namespace Sariou_Bot.Views
           Log($"Getting Chatters Started");
           List<User> users = new List<User>();
 
-          var currentChatters = await twitchAPI.Undocumented.GetChattersAsync(Settings.ChannelName);
+          currentChatters = await twitchAPI.Undocumented.GetChattersAsync(Settings.ChannelName);
           List<String> viewerList = new List<String>();
           foreach (var chatter in currentChatters)
           {
@@ -321,6 +349,7 @@ namespace Sariou_Bot.Views
                   slicedList = viewerList.GetRange(min, viewerList.Count);
               }
               users.AddRange((await twitchAPI.Helix.Users.GetUsersAsync(logins: slicedList)).Users);
+              
           }
           foreach (var user in users)
           {
@@ -396,7 +425,7 @@ namespace Sariou_Bot.Views
         {
             if (bot.IsConnected)
             {
-                bot.SendMessage(TwitchChannelName, Settings.DepartureMessage);
+                //bot.SendMessage(TwitchChannelName, Settings.DepartureMessage);
                 Task.Run(() => {
                     bot.Disconnect();
                 }).ConfigureAwait(false);

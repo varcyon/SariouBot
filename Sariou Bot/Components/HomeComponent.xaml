@@ -22,6 +22,7 @@
                 </FlowDocument>
             </RichTextBox>
             <Button x:Name="DisconnectBot" Content="Disconnect" Click="DisconnectFromTwitch"  HorizontalAlignment="Left" Margin="580,432,0,0" VerticalAlignment="Top" Height="40" Width="200"/>
+            <Button Content="Login" HorizontalAlignment="Left" Height="49" Margin="266,275,0,0" VerticalAlignment="Top" Width="50" Click="TwitchLogin"/>
 
         </Grid>
     </Grid>
