@@ -7,6 +7,8 @@
     <Nullable>enable</Nullable>
     <UseWPF>true</UseWPF>
     <Platforms>AnyCPU;x86</Platforms>
+    <StartupObject>Sariou_Bot.App</StartupObject>
+    <UserSecretsId>01afca0c-05e2-4a1e-abc7-0731bed61c44</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
@@ -31,25 +33,12 @@
     <PackageReference Include="Dapper" Version="2.0.123" />
     <PackageReference Include="LibVLCSharp.WPF" Version="3.6.6" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Core" Version="5.2.9" />
+    <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.UserSecrets" Version="5.0.0" />
     <PackageReference Include="Microsoft.Web.WebView2" Version="1.0.1293.44" />
     <PackageReference Include="System.Data.SQLite.Core" Version="1.0.116" />
     <PackageReference Include="TwitchLib" Version="3.4.1" />
     <PackageReference Include="VideoLAN.LibVLC.Windows" Version="3.0.17.4" />
-  </ItemGroup>
-
-  <ItemGroup>
-    <Compile Update="BotInfo.Designer.cs">
-      <DesignTime>True</DesignTime>
-      <AutoGen>True</AutoGen>
-      <DependentUpon>BotInfo.resx</DependentUpon>
-    </Compile>
-  </ItemGroup>
-
-  <ItemGroup>
-    <EmbeddedResource Update="BotInfo.resx">
-      <Generator>ResXFileCodeGenerator</Generator>
-      <LastGenOutput>BotInfo.Designer.cs</LastGenOutput>
-    </EmbeddedResource>
   </ItemGroup>
 
 </Project>

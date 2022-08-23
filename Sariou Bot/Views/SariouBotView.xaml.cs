@@ -40,7 +40,7 @@ using Sariou_Bot.ViewModels;
 namespace Sariou_Bot.Views
 {
 
-    public partial class SariouBotView : UserControl
+    public partial class SariouBotView 
     {
         public static HttpClient ApiClient { get;  set; }
         //EVENTS
@@ -49,7 +49,7 @@ namespace Sariou_Bot.Views
         ///
         public TwitchAuthViewModel twitchAuth;
        public string TwitchChannelName = "";
-       ConnectionCredentials creds = new ConnectionCredentials(BotInfo.BotName, BotInfo.AccessToken);
+       ConnectionCredentials creds;
        public static User broadcaster;
        private TwitchClient? bot;
        public static TwitchAPI? twitchAPI;
@@ -73,6 +73,7 @@ namespace Sariou_Bot.Views
         public SariouBotView()
         {   
             Settings = DAO.LoadBotSettings()[0];
+            creds = new ConnectionCredentials(Settings.BotName, Settings.AccessToken);
             InitializeComponent();
             InitializeWebServer();
 
@@ -135,9 +136,9 @@ namespace Sariou_Bot.Views
         {
             Debug.WriteLine("Setting up TwitchAPI.");
             twitchAPI = new TwitchAPI();
-            twitchAPI.Settings.AccessToken = BotInfo.AccessToken;
-            twitchAPI.Settings.ClientId = BotInfo.ClientId;
-            twitchAPI.Settings.Secret = BotInfo.ClientSecret;
+            twitchAPI.Settings.AccessToken = Settings.AccessToken;
+            twitchAPI.Settings.ClientId = Settings.ClientId;
+            twitchAPI.Settings.Secret = Settings.Secret;
             List<string> broadcasterList = new List<string>() { Settings.ChannelName };
             HomeComponent.ConnectTwitchBot += ConnectTwitchBot;
             HomeComponent.BotDisconnectPressed += Disconnect_Click;

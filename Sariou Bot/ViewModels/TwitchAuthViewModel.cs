@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sariou_Bot.Views;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -9,7 +10,7 @@ namespace Sariou_Bot.ViewModels
 {
     public class TwitchAuthViewModel : ViewModelBase
     {
-        private string ClientID { get; } = BotInfo.ClientId;
+        private string ClientID { get; } = SariouBotView.Settings.ClientId;
         private string RedirectURL { get; } = "";
         private string[] Scopes ;
         private string ScopeString ;

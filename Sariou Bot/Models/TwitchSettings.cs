@@ -17,8 +17,11 @@ namespace Sariou_Bot.Models
         private long? pointsPerMinute;
         private long? subPointMultiplier;
         private long? subGivewayMultiplier;
-
-    
+        private string botName = "SariouBot";
+        public string AccessToken { get; } = "s22qowy5i704mvqo80gcii3j55drif";
+        public string ClientId { get; } = "3rroaybe8j5ahxbhdfcaa19k8yyyjg";
+        public string Secret { get; } = "tqvkn4eexb9apb94xaziy65c2i5qx7";
+        public string RefreshToken { get; } = "f5n0qlhvdey662xkam2g0fz3ard416ethb89d1fixjz5cputm7";
 
         public string? ChannelName { get => channelName; set =>channelName = value; }
         public string? ArrivalMessage { get => arrivalMessage; set => arrivalMessage = value; }
@@ -28,6 +31,7 @@ namespace Sariou_Bot.Models
         public long? SubPointMultiplier { get => subPointMultiplier; set => subPointMultiplier = value; }
         public long? SubGivewayMultiplier { get => subGivewayMultiplier; set => subGivewayMultiplier = value; }
         public string? BroadcasterAccessToken { get => broadcasterAccessToken; set => broadcasterAccessToken = value; }
+        public string BotName { get => botName; set => botName = value; }
 
         public TwitchSettings()
         {

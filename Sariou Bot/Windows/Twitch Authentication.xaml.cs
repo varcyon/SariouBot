@@ -31,7 +31,7 @@ namespace Sariou_Bot
             TwitchAuthWebBrowser.SourceUpdated += TwitchAuthWebBrowser_SourceUpdated;
             URLBOX.Text = TwitchAuthWebBrowser.Source.ToString();
             AccessTokenReceived += RecievedAccessToken;
-            AccessTokenReceived?.Invoke(RecievedAccessToken);
+           // AccessTokenReceived?.Invoke(RecievedAccessToken);
         }
 
         private void RecievedAccessToken(AccessTokenReceived e)
@@ -41,7 +41,9 @@ namespace Sariou_Bot
 
         private void TwitchAuthWebBrowser_SourceUpdated(object? sender, DataTransferEventArgs e)
         {
-           //Do something;
+            //Do something;
+            var source = e.Source;
+            
         }
 
         public TwitchAuthViewModel ViewModel { get; }
