@@ -30,12 +30,12 @@ namespace Sariou_Bot
             }
         }
 
-        public static List<Settings> LoadBotSettings()
+        public static List<TwitchSettings> LoadBotSettings()
         {
             using (IDbConnection conn = new SQLiteConnection(LoadConnectionString()))
             {
-                var result = conn.Query<Settings>("SELECT * FROM BotSettings", new DynamicParameters());
-                return (List<Settings>)result;
+                var result = conn.Query<TwitchSettings>("SELECT * FROM BotSettings", new DynamicParameters());
+                return (List<TwitchSettings>)result;
             }
         }
         public static void UpdateSettingsChannelName()

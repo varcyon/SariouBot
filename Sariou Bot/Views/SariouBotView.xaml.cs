@@ -53,7 +53,7 @@ namespace Sariou_Bot.Views
        public static User broadcaster;
        private TwitchClient? bot;
        public static TwitchAPI? twitchAPI;
-       public static Settings? Settings;
+       public static TwitchSettings? Settings;
 
        public ObservableCollection<Models.SimpleCommand> simpleCommands = new ObservableCollection<Models.SimpleCommand>();
        public ObservableCollection<Models.SoundCommand> soundCommands = new ObservableCollection<Models.SoundCommand>();

@@ -21,6 +21,7 @@ namespace Sariou_Bot
     /// </summary>
     public partial class Twitch_Authentication : Window
     {
+        public static event Action<AccessTokenReceived> AccessTokenReceived;
         public Twitch_Authentication(TwitchAuthViewModel viewModel)
         {
             InitializeComponent();
@@ -29,6 +30,13 @@ namespace Sariou_Bot
             TwitchAuthWebBrowser.Source = new Uri(viewModel.AuthRequestURL);
             TwitchAuthWebBrowser.SourceUpdated += TwitchAuthWebBrowser_SourceUpdated;
             URLBOX.Text = TwitchAuthWebBrowser.Source.ToString();
+            AccessTokenReceived += RecievedAccessToken;
+            AccessTokenReceived?.Invoke(RecievedAccessToken);
+        }
+
+        private void RecievedAccessToken(AccessTokenReceived e)
+        {
+            Close();
         }
 
         private void TwitchAuthWebBrowser_SourceUpdated(object? sender, DataTransferEventArgs e)

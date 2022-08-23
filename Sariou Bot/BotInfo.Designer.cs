@@ -39,7 +39,7 @@ namespace Sariou_Bot {
         internal static global::System.Resources.ResourceManager ResourceManager {
             get {
                 if (object.ReferenceEquals(resourceMan, null)) {
-                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("Sariou_Bot.BotInfo", typeof(BotInfo).Assembly);
+                    global::System.Resources.ResourceManager temp = new global::System.Resources.ResourceManager("BotInfo", typeof(BotInfo).Assembly);
                     resourceMan = temp;
                 }
                 return resourceMan;
